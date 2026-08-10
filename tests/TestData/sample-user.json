@@ -1,0 +1,11 @@
+{
+    "ObjectId": "00000000-0000-0000-0000-000000000001",
+    "DisplayName": "Test Employee",
+    "UserPrincipalName": "test.employee@example.com",
+    "Mail": "test.employee@example.com",
+    "AccountEnabled": false,
+    "UserType": "Member",
+    "CreatedDate": "2020-01-01T00:00:00Z",
+    "JobTitle": "Test User",
+    "Department": "Test Department"
+}

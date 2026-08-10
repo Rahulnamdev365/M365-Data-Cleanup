@@ -78,6 +78,9 @@ foreach ($ServiceFile in $ServiceFiles) {
 $ModuleFiles = @(
     'Models.ps1'
     'UserDiscovery.ps1'
+    'ExchangeDiscovery.ps1'
+    'OneDriveDiscovery.ps1'
+
 )
 
 foreach ($ModuleFile in $ModuleFiles) {
@@ -180,11 +183,21 @@ Write-Host ''
 # Development Discovery Test
 # ------------------------------------------------------------
 
+Write-Host ''
 Write-Host 'Running development discovery test...' `
     -ForegroundColor Cyan
 
 $TestUser = Get-M365CleanupUser `
     -UserPrincipalName 'test.employee@example.com'
+
+if ($null -eq $TestUser) {
+
+    Write-Host ''
+    Write-Host 'Test user could not be discovered.' `
+        -ForegroundColor Red
+
+    exit 1
+}
 
 Write-Host ''
 Write-Host 'Discovery Result' `
@@ -193,6 +206,46 @@ Write-Host 'Discovery Result' `
 $TestUser |
     Format-List
 
+# ------------------------------------------------------------
+# Exchange Discovery Test
+# ------------------------------------------------------------
+
 Write-Host ''
-Write-Host 'Discovery test completed.' `
+Write-Host 'Running Exchange discovery test...' `
+    -ForegroundColor Cyan
+
+$ExchangeData = Get-M365ExchangeData `
+    -UserPrincipalName $TestUser.UserPrincipalName
+
+Write-Host ''
+Write-Host 'Exchange Discovery Result' `
+    -ForegroundColor Cyan
+
+$ExchangeData |
+    Format-List
+
+Write-Host ''
+Write-Host 'Discovery tests completed.' `
+    -ForegroundColor Green
+
+    # ------------------------------------------------------------
+# OneDrive Discovery Test
+# ------------------------------------------------------------
+
+Write-Host ''
+Write-Host 'Running OneDrive discovery test...' `
+    -ForegroundColor Cyan
+
+$OneDriveData = Get-M365OneDriveData `
+    -UserPrincipalName $TestUser.UserPrincipalName
+
+Write-Host ''
+Write-Host 'OneDrive Discovery Result' `
+    -ForegroundColor Cyan
+
+$OneDriveData |
+    Format-List
+
+Write-Host ''
+Write-Host 'OneDrive discovery test completed.' `
     -ForegroundColor Green
