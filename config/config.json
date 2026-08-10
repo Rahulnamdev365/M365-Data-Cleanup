@@ -9,7 +9,7 @@
         "TenantName": "yourtenant.onmicrosoft.com"
     },
     "Development": {
-        "UseMockData": true
+        "UseMockData": false
     },
     "Logging": {
         "EnableFileLogging": true,

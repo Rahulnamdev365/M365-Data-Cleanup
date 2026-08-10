@@ -187,8 +187,24 @@ Write-Host ''
 Write-Host 'Running development discovery test...' `
     -ForegroundColor Cyan
 
+# ------------------------------------------------------------
+# Production Discovery Test
+# ------------------------------------------------------------
+
+$DiscoveryUPN = Read-Host `
+    "Enter the UPN of the user to discover"
+
+if ([string]::IsNullOrWhiteSpace($DiscoveryUPN)) {
+
+    Write-Host ''
+    Write-Host 'A user UPN is required.' `
+        -ForegroundColor Red
+
+    exit 1
+}
+
 $TestUser = Get-M365CleanupUser `
-    -UserPrincipalName 'test.employee@example.com'
+    -UserPrincipalName $DiscoveryUPN
 
 if ($null -eq $TestUser) {
 
