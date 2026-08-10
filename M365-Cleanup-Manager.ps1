@@ -80,7 +80,7 @@ $ModuleFiles = @(
     'UserDiscovery.ps1'
     'ExchangeDiscovery.ps1'
     'OneDriveDiscovery.ps1'
-
+    'SharePointDiscovery.ps1'
 )
 
 foreach ($ModuleFile in $ModuleFiles) {
@@ -248,4 +248,38 @@ $OneDriveData |
 
 Write-Host ''
 Write-Host 'OneDrive discovery test completed.' `
+    -ForegroundColor Green
+
+# ------------------------------------------------------------
+# SharePoint Discovery Test
+# ------------------------------------------------------------
+
+Write-Host ''
+Write-Host 'Running SharePoint discovery test...' `
+    -ForegroundColor Cyan
+
+$SharePointData = Get-M365SharePointData `
+    -UserPrincipalName $TestUser.UserPrincipalName
+
+Write-Host ''
+Write-Host 'SharePoint Discovery Result' `
+    -ForegroundColor Cyan
+
+$SharePointData |
+    Format-List
+
+Write-Host ''
+Write-Host 'Discovered SharePoint Sites' `
+    -ForegroundColor Cyan
+
+$SharePointData.SitesFound |
+    Format-Table `
+        SiteName,
+        WebUrl,
+        Relationship,
+        Status `
+        -AutoSize
+
+Write-Host ''
+Write-Host 'SharePoint discovery test completed.' `
     -ForegroundColor Green
