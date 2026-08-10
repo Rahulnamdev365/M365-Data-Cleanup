@@ -57,6 +57,21 @@ $Script:Paths = @{
 }
 
 # ------------------------------------------------------------
+# Load Services
+# ------------------------------------------------------------
+
+$AuthenticationModule = Join-Path `
+    $Script:Paths.Services `
+    'Authentication.ps1'
+
+if (Test-Path $AuthenticationModule) {
+    . $AuthenticationModule
+}
+else {
+    throw "Authentication module not found: $AuthenticationModule"
+}
+
+# ------------------------------------------------------------
 # Startup
 # ------------------------------------------------------------
 
@@ -91,3 +106,31 @@ Write-Host 'Destructive operations are disabled in this version.' `
     -ForegroundColor Yellow
 
 Write-Host ''
+
+# ------------------------------------------------------------
+# Authentication Test
+# ------------------------------------------------------------
+
+Write-Host "Starting Microsoft 365 authentication..." `
+    -ForegroundColor Cyan
+
+$M365Context = Connect-M365CleanupManager
+
+Write-Host ""
+Write-Host "Authentication test completed successfully." `
+    -ForegroundColor Green
+
+    # ------------------------------------------------------------
+# Load Discovery Modules
+# ------------------------------------------------------------
+
+$UserDiscoveryModule = Join-Path `
+    $Script:Paths.Modules `
+    'UserDiscovery.ps1'
+
+if (Test-Path $UserDiscoveryModule) {
+    . $UserDiscoveryModule
+}
+else {
+    throw "User discovery module not found: $UserDiscoveryModule"
+}
