@@ -1,6 +1,6 @@
 # ============================================================
 # M365 Cleanup Manager
-# User Discovery Module
+# User Discovery
 # ============================================================
 
 Set-StrictMode -Version Latest
@@ -13,10 +13,42 @@ function Get-M365CleanupUser {
         [string]$UserPrincipalName
     )
 
-    Write-Host ""
-    Write-Host "Searching for user..." -ForegroundColor Cyan
-    Write-Host "UPN: $UserPrincipalName" -ForegroundColor Gray
-    Write-Host ""
+    # --------------------------------------------------------
+    # Development / Mock Mode
+    # --------------------------------------------------------
+
+    if ($Script:Configuration.Development.UseMockData) {
+
+        Write-Host ''
+        Write-Host '[MOCK] Searching for user:' `
+            -ForegroundColor Yellow
+
+        Write-Host $UserPrincipalName `
+            -ForegroundColor Gray
+
+        $MockPath = Join-Path `
+            $Script:Paths.Tests `
+            'TestData\sample-user.json'
+
+        if (-not (Test-Path $MockPath)) {
+            throw "Mock user data not found: $MockPath"
+        }
+
+        $MockUser = Get-Content `
+            -Path $MockPath `
+            -Raw |
+            ConvertFrom-Json
+
+        return $MockUser
+    }
+
+    # --------------------------------------------------------
+    # Microsoft Graph
+    # --------------------------------------------------------
+
+    Write-Host ''
+    Write-Host 'Searching Microsoft Entra ID...' `
+        -ForegroundColor Cyan
 
     try {
 
@@ -24,21 +56,20 @@ function Get-M365CleanupUser {
             -UserId $UserPrincipalName `
             -Property `
                 Id,
-               DisplayName,
-               UserPrincipalName,
-               Mail,
-               AccountEnabled,
-               UserType,
-               CreatedDateTime,
-               JobTitle,
-               Department
+                DisplayName,
+                UserPrincipalName,
+                Mail,
+                AccountEnabled,
+                UserType,
+                CreatedDateTime,
+                JobTitle,
+                Department
 
         if (-not $User) {
-            Write-Host "User not found." -ForegroundColor Red
             return $null
         }
 
-        [PSCustomObject]@{
+        return [PSCustomObject]@{
             ObjectId          = $User.Id
             DisplayName       = $User.DisplayName
             UserPrincipalName = $User.UserPrincipalName
@@ -52,10 +83,12 @@ function Get-M365CleanupUser {
     }
     catch {
 
-        Write-Host ""
-        Write-Host "User discovery failed." -ForegroundColor Red
-        Write-Host $_.Exception.Message -ForegroundColor Red
-        Write-Host ""
+        Write-Host ''
+        Write-Host 'User discovery failed.' `
+            -ForegroundColor Red
+
+        Write-Host $_.Exception.Message `
+            -ForegroundColor Red
 
         throw
     }

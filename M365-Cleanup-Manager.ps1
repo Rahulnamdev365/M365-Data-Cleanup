@@ -2,20 +2,13 @@
 # M365 Cleanup Manager
 # ============================================================
 #
-# Purpose:
-#   Microsoft 365 data discovery and controlled cleanup tool.
+# Microsoft 365 Data Discovery & Controlled Cleanup
 #
-# Repository:
-#   M365-Cleanup-Manager
-#
-# Current Version:
-#   0.1.0
-#
-# Current Mode:
-#   READ-ONLY / DEVELOPMENT
+# Version: 0.2.0
+# Environment: Development
 #
 # IMPORTANT:
-#   No destructive operations are implemented in this version.
+# Destructive operations are NOT implemented.
 #
 # ============================================================
 
@@ -32,13 +25,13 @@ $ErrorActionPreference = 'Stop'
 
 $Script:Application = @{
     Name        = 'M365 Cleanup Manager'
-    Version     = '0.1.0'
+    Version     = '0.2.0'
     Environment = 'Development'
     Mode        = 'READ-ONLY'
 }
 
 # ------------------------------------------------------------
-# Paths
+# Project Paths
 # ------------------------------------------------------------
 
 $Script:RootPath = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -60,19 +53,48 @@ $Script:Paths = @{
 # Load Services
 # ------------------------------------------------------------
 
-$AuthenticationModule = Join-Path `
-    $Script:Paths.Services `
+$ServiceFiles = @(
+    'Configuration.ps1'
     'Authentication.ps1'
+)
 
-if (Test-Path $AuthenticationModule) {
-    . $AuthenticationModule
-}
-else {
-    throw "Authentication module not found: $AuthenticationModule"
+foreach ($ServiceFile in $ServiceFiles) {
+
+    $ServicePath = Join-Path `
+        $Script:Paths.Services `
+        $ServiceFile
+
+    if (-not (Test-Path $ServicePath)) {
+        throw "Required service not found: $ServicePath"
+    }
+
+    . $ServicePath
 }
 
 # ------------------------------------------------------------
-# Startup
+# Load Modules
+# ------------------------------------------------------------
+
+$ModuleFiles = @(
+    'Models.ps1'
+    'UserDiscovery.ps1'
+)
+
+foreach ($ModuleFile in $ModuleFiles) {
+
+    $ModulePath = Join-Path `
+        $Script:Paths.Modules `
+        $ModuleFile
+
+    if (-not (Test-Path $ModulePath)) {
+        throw "Required module not found: $ModulePath"
+    }
+
+    . $ModulePath
+}
+
+# ------------------------------------------------------------
+# Application Banner
 # ------------------------------------------------------------
 
 Clear-Host
@@ -96,41 +118,81 @@ Write-Host "Mode        : $($Script:Application.Mode)" `
 
 Write-Host ''
 
+# ------------------------------------------------------------
+# Configuration
+# ------------------------------------------------------------
+
+try {
+
+    $Script:Configuration = Get-M365CleanupConfiguration
+
+    Write-Host 'Configuration loaded.' `
+        -ForegroundColor Green
+
+    Write-Host "Mock Data   : $($Script:Configuration.Development.UseMockData)"
+    Write-Host ''
+
+}
+catch {
+
+    Write-Host ''
+    Write-Host 'Configuration error.' `
+        -ForegroundColor Red
+
+    Write-Host $_.Exception.Message `
+        -ForegroundColor Red
+
+    exit 1
+}
+
+# ------------------------------------------------------------
+# Authentication
+# ------------------------------------------------------------
+
+if ($Script:Configuration.Development.UseMockData) {
+
+    Write-Host 'Development mode enabled.' `
+        -ForegroundColor Yellow
+
+    Write-Host 'Microsoft 365 authentication is currently skipped.' `
+        -ForegroundColor Yellow
+
+}
+else {
+
+    Write-Host 'Starting Microsoft 365 authentication...' `
+        -ForegroundColor Cyan
+
+    $Script:M365Context = Connect-M365CleanupManager
+}
+
+Write-Host ''
 Write-Host 'Application initialized successfully.' `
     -ForegroundColor Green
 
 Write-Host ''
-
-Write-Host 'IMPORTANT:' -ForegroundColor Yellow
-Write-Host 'Destructive operations are disabled in this version.' `
-    -ForegroundColor Yellow
+Write-Host 'Discovery engine ready.' `
+    -ForegroundColor Green
 
 Write-Host ''
 
 # ------------------------------------------------------------
-# Authentication Test
+# Development Discovery Test
 # ------------------------------------------------------------
 
-Write-Host "Starting Microsoft 365 authentication..." `
+Write-Host 'Running development discovery test...' `
     -ForegroundColor Cyan
 
-$M365Context = Connect-M365CleanupManager
+$TestUser = Get-M365CleanupUser `
+    -UserPrincipalName 'test.employee@example.com'
 
-Write-Host ""
-Write-Host "Authentication test completed successfully." `
+Write-Host ''
+Write-Host 'Discovery Result' `
+    -ForegroundColor Cyan
+
+$TestUser |
+    Format-List
+
+Write-Host ''
+Write-Host 'Discovery test completed.' `
     -ForegroundColor Green
-
-    # ------------------------------------------------------------
-# Load Discovery Modules
-# ------------------------------------------------------------
-
-$UserDiscoveryModule = Join-Path `
-    $Script:Paths.Modules `
-    'UserDiscovery.ps1'
-
-if (Test-Path $UserDiscoveryModule) {
-    . $UserDiscoveryModule
-}
-else {
-    throw "User discovery module not found: $UserDiscoveryModule"
-}

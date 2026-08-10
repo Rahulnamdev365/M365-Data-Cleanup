@@ -1,0 +1,23 @@
+{
+    "Application": {
+        "Name": "M365 Cleanup Manager",
+        "Version": "0.2.0",
+        "Environment": "Development"
+    },
+    "Microsoft365": {
+        "TenantId": "YOUR-TENANT-ID",
+        "TenantName": "yourtenant.onmicrosoft.com"
+    },
+    "Development": {
+        "UseMockData": true
+    },
+    "Logging": {
+        "EnableFileLogging": true,
+        "LogDirectory": "./logs"
+    },
+    "Deletion": {
+        "RequirePreview": true,
+        "RequireConfirmation": true,
+        "AllowPermanentDeletion": false
+    }
+}
